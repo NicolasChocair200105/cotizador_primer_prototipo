@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<!-- Agregamos clase base, sin 'dark' por defecto para que inicie en Modo Claro -->
+<html lang="es" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador CINTAC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuente Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilitamos el modo oscuro por clase
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cintac: {
+                            maroon: '#6b1d2d', // Color terracota oscuro superior
+                            dark: '#1a1b26',   // Fondo oscuro
+                            card: '#242636',   // Fondo de tarjetas oscuro
+                            orange: '#f97316', // Naranja corporativo
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animaciones suaves */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilo para el input range (Barra de peso) */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        .dark input[type=range]::-webkit-slider-runnable-track {
+            background: #4b5563; /* Color de pista en modo oscuro */
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex justify-center bg-gray-100 dark:bg-cintac-dark transition-colors duration-300">
+
+    <!-- Contenedor principal simulando App -->
+    <div class="w-full max-w-lg bg-gray-50 dark:bg-cintac-dark min-h-screen flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        
+        <!-- Fondo superior Terracota (AUMENTADO EL ALTO Y PADDING) -->
+        <div class="bg-cintac-maroon w-full pt-8 pb-16 px-6 text-center rounded-b-3xl absolute top-0 left-0 z-0 h-56">
+            <!-- Botón Dark Mode Toggle -->
+            <button id="theme-toggle" type="button" class="absolute top-6 right-6 text-white hover:text-gray-300 focus:outline-none rounded-lg text-sm p-2 transition-colors">
+                <i id="theme-toggle-dark-icon" class="fa-solid fa-moon text-xl hidden"></i>
+                <i id="theme-toggle-light-icon" class="fa-solid fa-sun text-xl"></i>
+            </button>
+
+            <h1 class="text-2xl font-bold text-white mb-1">Cotizador CINTAC</h1>
+            <p class="text-gray-200 text-sm font-light">Estimación instantánea y logística ágil</p>
+            <div class="mt-4 inline-block bg-black/30 px-4 py-1 rounded-full text-xs text-gray-200 border border-white/10">
+                Departamento Choca ;)
+            </div>
+        </div>
+
+        <!-- Contenedor de la UI sobre el fondo (AUMENTADO EL MARGEN SUPERIOR A mt-44 PARA BAJAR EL CONTENIDO) -->
+        <div class="z-10 flex flex-col flex-grow mt-44 px-6">
+            
+            <!-- Barra de Progreso (AHORA SIEMPRE VISIBLE) -->
+            <div id="stepper-wrapper" class="mb-6">
+                <div class="bg-white dark:bg-cintac-card rounded-2xl p-4 flex justify-between items-center border border-gray-200 dark:border-gray-700/50 shadow-md dark:shadow-lg relative transition-colors duration-300">
+                    <!-- Línea conectora base -->
+                    <div class="absolute top-1/2 left-[10%] right-[10%] h-0.5 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0"></div>
+                    <!-- Línea conectora activa -->
+                    <div id="progress-line" class="absolute top-1/2 left-[10%] h-0.5 bg-cintac-orange -translate-y-1/2 z-0 transition-all duration-300 w-0"></div>
+
+                    <!-- Pasos -->
+                    <div class="step-indicator relative z-10 flex flex-col items-center gap-1" data-step="1">
+                        <div class="w-8 h-8 rounded-full bg-cintac-orange text-white flex items-center justify-center text-sm font-bold shadow-[0_0_10px_rgba(249,115,22,0.5)]" id="indicator-1">1</div>
+                    </div>
+                    <div class="step-indicator relative z-10 flex flex-col items-center gap-1" data-step="2">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-sm font-bold transition-colors" id="indicator-2">2</div>
+                    </div>
+                    <div class="step-indicator relative z-10 flex flex-col items-center gap-1" data-step="3">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-sm font-bold transition-colors" id="indicator-3">3</div>
+                    </div>
+                    <div class="step-indicator relative z-10 flex flex-col items-center gap-1" data-step="4">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-sm font-bold transition-colors" id="indicator-4">4</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-1" class="step-container hidden fade-in flex-grow flex-col">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Tipo de transporte</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Tarjeta Marítimo -->
+                    <div class="border-2 border-cintac-orange bg-orange-50 dark:bg-cintac-orange/5 rounded-xl p-6 flex flex-col items-center justify-center shadow-lg transition-transform transform hover:scale-105">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-cintac-orange flex items-center justify-center mb-3 shadow-md">
+                            <i class="fa-solid fa-ship text-2xl text-white"></i>
+                        </div>
+                        <span class="font-semibold text-gray-800 dark:text-white">Marítimo</span>
+                        <span class="text-xs text-cintac-orange mt-1 font-medium">Seleccionado</span>
+                    </div>
+                    <!-- Tarjeta Aérea (Deshabilitada) -->
+                    <div class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-cintac-card/50 rounded-xl p-6 flex flex-col items-center justify-center opacity-60 cursor-not-allowed">
+                        <div class="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-plane text-2xl text-gray-400"></i>
+                        </div>
+                        <span class="font-semibold text-gray-500 dark:text-gray-400">Aéreo</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 mt-1">No disponible</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-6 text-center bg-gray-200/50 dark:bg-gray-800/50 p-3 rounded-lg"><i class="fa-solid fa-circle-info mr-1"></i> Para este proceso, el cotizador está configurado exclusivamente para fletes marítimos.</p>
+            </div>
+
+            <div id="step-2" class="step-container hidden fade-in flex-grow flex-col">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Ruta de Importación</h2>
+                <div class="space-y-6">
+                    <!-- Origen -->
+                    <div class="bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 rounded-xl p-5 relative shadow-sm transition-colors duration-300">
+                        <div class="absolute left-6 top-9 w-0.5 h-16 bg-gray-300 dark:bg-gray-600 border-l-2 border-dashed border-gray-300 dark:border-gray-600 z-0"></div>
+                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 relative z-10"><i class="fa-solid fa-location-dot text-cintac-orange mr-2"></i>Origen (Embarcador)</label>
+                        <select id="origen" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-cintac-orange focus:border-cintac-orange block p-3 outline-none relative z-10 appearance-none">
+                            <option value="shanghai">Shanghái, China</option>
+                            <option value="buenaventura">Buenaventura, Colombia</option>
+                            <option value="oporto">Oporto, Europa</option>
+                        </select>
+                    </div>
+
+                    <!-- Destino -->
+                    <div class="bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 rounded-xl p-5 relative shadow-sm transition-colors duration-300">
+                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2"><i class="fa-solid fa-flag-checkered text-green-500 mr-2"></i>Destino (Chile)</label>
+                        <select id="destino" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-cintac-orange focus:border-cintac-orange block p-3 outline-none appearance-none">
+                            <option value="san_antonio">Puerto San Antonio</option>
+                            <option value="valparaiso">Puerto Valparaíso</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-3" class="step-container hidden fade-in flex-grow flex-col">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Detalles de la Carga</h2>
+                
+                <!-- Tipo de Carga -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Tipo de Carga</label>
+                    <div class="grid grid-cols-3 gap-2" id="cargo-types">
+                        <button class="cargo-btn border-2 border-cintac-orange bg-orange-50 dark:bg-cintac-orange/10 text-cintac-orange dark:text-white rounded-lg py-2 text-sm font-semibold transition-colors" data-type="general">General</button>
+                        <button class="cargo-btn border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-cintac-card text-gray-600 dark:text-gray-400 rounded-lg py-2 text-sm font-medium transition-colors hover:border-gray-300 dark:hover:border-gray-500" data-type="peligroso">Peligroso</button>
+                        <button class="cargo-btn border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-cintac-card text-gray-600 dark:text-gray-400 rounded-lg py-2 text-sm font-medium transition-colors hover:border-gray-300 dark:hover:border-gray-500" data-type="otro">Otro</button>
+                    </div>
+                </div>
+
+                <!-- Peso -->
+                <div class="mb-5 bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl p-4 transition-colors duration-300">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Peso Total</label>
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span id="lbl-kg" class="text-gray-400 font-medium">KG</span>
+                            <!-- Toggle switch Ton/Kg -->
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="unit-toggle" class="sr-only peer" checked>
+                                <div class="w-9 h-5 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cintac-orange"></div>
+                            </label>
+                            <span id="lbl-ton" class="text-cintac-orange font-bold">TON</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="peso-input" value="10" min="1" class="w-24 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-center rounded-lg p-2 outline-none focus:border-cintac-orange font-semibold">
+                        <input type="range" id="peso-slider" min="1" max="100" value="10" class="flex-grow">
+                    </div>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-500 mt-2 text-right font-medium">Límite operativo: 25 Ton / Contenedor</p>
+                </div>
+
+                <!-- Descripción Opcional -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Descripción (Opcional)</label>
+                    <textarea class="w-full bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg shadow-sm focus:ring-cintac-orange focus:border-cintac-orange block p-3 outline-none resize-none h-20 transition-colors duration-300" placeholder="Ej: Repuestos metálicos, accesorios de acero..."></textarea>
+                </div>
+            </div>
+
+            <div id="step-4" class="step-container hidden fade-in flex-grow flex-col">
+                
+                <!-- Resumen Monetario -->
+                <div class="bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-cintac-card border border-cintac-orange/40 rounded-xl p-5 mb-5 shadow-md relative overflow-hidden transition-colors duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-cintac-orange/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Estimación de Flete Marítimo</h3>
+                    <div class="flex items-end gap-2 mb-1">
+                        <span class="text-3xl font-bold text-gray-900 dark:text-white" id="est-usd">$0</span>
+                        <span class="text-sm text-cintac-orange font-bold mb-1">USD</span>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="est-clp">Aprox. $0 CLP</p>
+                    
+                    <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-500">Contenedores req.</p>
+                            <p class="text-gray-900 dark:text-white font-bold text-sm mt-1" id="est-contenedores">0 <i class="fa-solid fa-box text-gray-400 dark:text-gray-500 ml-1"></i></p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-500">Impuestos incl.</p>
+                            <p class="text-gray-900 dark:text-white font-bold text-sm mt-1">19% CIF <i class="fa-solid fa-file-invoice text-gray-400 dark:text-gray-500 ml-1"></i></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Contacto -->
+                <h2 class="text-sm font-bold mb-3 text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1">Datos de Solicitud</h2>
+                <div class="space-y-3">
+                    <input type="text" placeholder="Nombre Completo" class="w-full bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg shadow-sm focus:border-cintac-orange outline-none p-3 transition-colors duration-300">
+                    <input type="email" placeholder="Email corporativo" class="w-full bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg shadow-sm focus:border-cintac-orange outline-none p-3 transition-colors duration-300">
+                    <input type="tel" placeholder="Teléfono / WhatsApp" class="w-full bg-white dark:bg-cintac-card border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg shadow-sm focus:border-cintac-orange outline-none p-3 transition-colors duration-300">
+                </div>
+            </div>
+
+            <div id="step-5" class="step-container hidden fade-in flex-grow flex-col justify-center items-center text-center pb-10">
+                <div class="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                    <i class="fa-solid fa-check text-4xl text-green-500"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">¡Cotización Generada!</h2>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-8 px-4">Tu solicitud ha sido registrada en el sistema. Puedes descargar o compartir el comprobante.</p>
+                
+                <div class="w-full space-y-3">
+                    <button class="w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-600 shadow-sm transition-colors font-medium">
+                        <i class="fa-solid fa-file-pdf text-red-500"></i> Descargar PDF
+                    </button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-600 shadow-sm transition-colors font-medium">
+                            <i class="fa-solid fa-envelope text-blue-500"></i> Email
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-600 shadow-sm transition-colors font-medium">
+                            <i class="fa-brands fa-whatsapp text-green-500 text-lg"></i> WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="px-6 pb-6 pt-4 bg-gray-50 dark:bg-cintac-dark z-10 mt-auto transition-colors duration-300">
+            <div id="navigation-buttons" class="flex gap-3 mb-6">
+                <!-- Botón Volver -->
+                <button id="btn-volver" class="hidden flex-1 bg-white dark:bg-transparent border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white py-3 rounded-xl font-medium shadow-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onclick="prevStep()">
+                    Volver
+                </button>
+                <!-- Botón Continuar / Solicitar -->
+                <button id="btn-continuar" class="flex-1 bg-cintac-orange text-white py-3 rounded-xl font-medium shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors" onclick="nextStep()">
+                    Continuar <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+                <!-- Botón Aceptar (Pantalla 5) -->
+                <button id="btn-aceptar" class="hidden flex-1 bg-cintac-orange text-white py-3 rounded-xl font-medium shadow-lg hover:bg-orange-600 transition-colors" onclick="resetApp()">
+                    Aceptar y Finalizar
+                </button>
+            </div>
+            
+            <div class="text-center text-gray-400 dark:text-gray-500 text-xs font-bold tracking-widest uppercase">
+                <a href="#" class="hover:text-cintac-orange transition-colors">cintac.cl</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funcionalidad Dark Mode Toggle
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            }
+        }
+        // Inicializar iconos basados en estado inicial (Claro)
+        updateThemeIcons();
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            updateThemeIcons();
+        });
+
+        // Lógica de Navegación (Stepper)
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        const btnVolver = document.getElementById('btn-volver');
+        const btnContinuar = document.getElementById('btn-continuar');
+        const btnAceptar = document.getElementById('btn-aceptar');
+        const stepperWrapper = document.getElementById('stepper-wrapper');
+        const progressLine = document.getElementById('progress-line');
+
+        function updateUI() {
+            // Ocultar todos los contenedores de paso con Tailwind
+            document.querySelectorAll('.step-container').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+            // Mostrar paso actual
+            const currentEl = document.getElementById(`step-${currentStep}`);
+            currentEl.classList.remove('hidden');
+            currentEl.classList.add('flex');
+
+            // Mostrar/Ocultar Stepper (OCULTO SOLO EN PASO 5)
+            if (currentStep === 5) {
+                stepperWrapper.classList.add('hidden');
+            } else {
+                stepperWrapper.classList.remove('hidden');
+                
+                // Actualizar progreso
+                const progressWidths = ['0%', '0%', '33%', '66%', '100%'];
+                progressLine.style.width = progressWidths[currentStep];
+
+                // Colorear bolitas del stepper
+                for (let i = 1; i <= 4; i++) {
+                    const indicator = document.getElementById(`indicator-${i}`);
+                    if (i <= currentStep) {
+                        indicator.className = "w-8 h-8 rounded-full bg-cintac-orange text-white flex items-center justify-center text-sm font-bold shadow-[0_0_10px_rgba(249,115,22,0.5)] transition-colors";
+                    } else {
+                        indicator.className = "w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-sm font-bold transition-colors";
+                    }
+                }
+            }
+
+            // Gestión de Botones Inferiores
+            if (currentStep === 1) {
+                btnVolver.classList.add('hidden');
+                btnContinuar.classList.remove('hidden');
+                btnAceptar.classList.add('hidden');
+                btnContinuar.innerHTML = 'Continuar <i class="fa-solid fa-arrow-right ml-1"></i>';
+            } else if (currentStep === 4) {
+                btnVolver.classList.remove('hidden');
+                btnContinuar.classList.remove('hidden');
+                btnAceptar.classList.add('hidden');
+                btnContinuar.innerHTML = 'Solicitar Cotización';
+                calculateMockEstimate(); // Realiza cálculo matemático
+            } else if (currentStep === 5) {
+                btnVolver.classList.add('hidden');
+                btnContinuar.classList.add('hidden');
+                btnAceptar.classList.remove('hidden');
+            } else {
+                btnVolver.classList.remove('hidden');
+                btnContinuar.classList.remove('hidden');
+                btnAceptar.classList.add('hidden');
+                btnContinuar.innerHTML = 'Continuar <i class="fa-solid fa-arrow-right ml-1"></i>';
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        function resetApp() {
+            currentStep = 1;
+            updateUI();
+        }
+
+        // Lógica: Selección de Tipo de Carga (Paso 3)
+        const cargoBtns = document.querySelectorAll('.cargo-btn');
+        cargoBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Reset styles a gris claro/oscuro
+                cargoBtns.forEach(b => {
+                    b.className = "cargo-btn border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-cintac-card text-gray-600 dark:text-gray-400 rounded-lg py-2 text-sm font-medium transition-colors hover:border-gray-300 dark:hover:border-gray-500";
+                });
+                // Set active style a Naranja corporativo
+                btn.className = "cargo-btn border-2 border-cintac-orange bg-orange-50 dark:bg-cintac-orange/10 text-cintac-orange dark:text-white rounded-lg py-2 text-sm font-semibold transition-colors";
+            });
+        });
+
+        // Lógica: Sincronizar Slider e Input numérico del Peso
+        const pesoSlider = document.getElementById('peso-slider');
+        const pesoInput = document.getElementById('peso-input');
+        const unitToggle = document.getElementById('unit-toggle');
+        const lblKg = document.getElementById('lbl-kg');
+        const lblTon = document.getElementById('lbl-ton');
+
+        pesoSlider.addEventListener('input', (e) => { pesoInput.value = e.target.value; });
+        pesoInput.addEventListener('input', (e) => { pesoSlider.value = e.target.value; });
+
+        unitToggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                // Es Tonelada
+                lblTon.classList.add('text-cintac-orange', 'font-bold');
+                lblTon.classList.remove('text-gray-400', 'font-medium');
+                lblKg.classList.add('text-gray-400', 'font-medium');
+                lblKg.classList.remove('text-cintac-orange', 'font-bold');
+                pesoInput.value = (pesoInput.value / 1000).toFixed(1);
+                pesoSlider.max = 100;
+            } else {
+                // Es KG
+                lblKg.classList.add('text-cintac-orange', 'font-bold');
+                lblKg.classList.remove('text-gray-400', 'font-medium');
+                lblTon.classList.add('text-gray-400', 'font-medium');
+                lblTon.classList.remove('text-cintac-orange', 'font-bold');
+                pesoInput.value = (pesoInput.value * 1000);
+                pesoSlider.max = 100000;
+            }
+            pesoSlider.value = pesoInput.value;
+        });
+
+        // Función para calcular la estimación (Lógica de Negocio de Cintac)
+        function calculateMockEstimate() {
+            let peso = parseFloat(pesoInput.value);
+            let isTon = unitToggle.checked;
+            
+            // Regla de Negocio: Convertir a toneladas si está en KG
+            let pesoTon = isTon ? peso : (peso / 1000);
+            
+            // Regla de Negocio: Max 25 Toneladas por contenedor
+            let contenedoresReq = Math.ceil(pesoTon / 25);
+            if(contenedoresReq === 0) contenedoresReq = 1; // Mínimo 1
+
+            // Mock Data (Simulando valor neto extraído de OneDrive)
+            let tarifaNetaUSD = 4500 * contenedoresReq;
+            
+            // Regla de Negocio: 19% impuesto CIF obligatorio
+            let impuesto = tarifaNetaUSD * 0.19;
+            let totalUSD = tarifaNetaUSD + impuesto;
+            
+            // Conversión a CLP (Mock Tipo de Cambio: $920 CLP/USD)
+            let totalCLP = totalUSD * 920;
+
+            // Formatear a moneda
+            const formatUSD = new Intl.NumberFormat('en-US').format(Math.round(totalUSD));
+            const formatCLP = new Intl.NumberFormat('es-CL').format(Math.round(totalCLP));
+
+            // Imprimir en la UI
+            document.getElementById('est-contenedores').innerHTML = `${contenedoresReq} <i class="fa-solid fa-box text-gray-400 dark:text-gray-500 ml-1"></i>`;
+            document.getElementById('est-usd').innerText = `$${formatUSD}`;
+            document.getElementById('est-clp').innerText = `Aprox. $${formatCLP} CLP`;
+        }
+
+        // Iniciar
+        updateUI();
+    </script>
+</body>
+</html>
